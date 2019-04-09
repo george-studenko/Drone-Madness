@@ -171,6 +171,16 @@ def print_objects(boxes, class_names):
             cls_id = box[6]
             print('%i. %s: %f' % (i + 1, class_names[cls_id], cls_conf))
 
+def get_detected_objects(boxes, class_names):    
+    objects = []
+    classes = []
+    for i in range(len(boxes)):
+        box = boxes[i]
+        if len(box) >= 7 and class_names:
+            cls_conf = box[5]
+            cls_id = box[6]
+            print('%i. %s: %f' % (i + 1, class_names[cls_id], cls_conf))
+            
             
 def plot_boxes(img, boxes, class_names, plot_labels, color = None):
     
