@@ -12,11 +12,8 @@ def main():
     print('Starting...')
     mission = Mission()
     #while (True):
-    print(mission.Drone.response)
-    print(mission.Drone._)
     # run frontend
     # frontend.run()
-    mission.Drone.end()
     print('Closing...')
 
 
