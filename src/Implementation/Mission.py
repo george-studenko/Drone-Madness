@@ -23,12 +23,13 @@ class Mission(object):
         self.navigating = False
         self.Drone = Tello()
         self.flight_state = States.MANUAL
-        print('Current state',self.Drone.current_state)
+        self.print_state(self.Drone.state_dict)
         self.Drone.connect()
         #self.Drone.takeoff()
-        print('Current state',self.Drone.current_state)
+        self.print_state(self.Drone.state_dict)
         #self.Drone.land()
-        print('Current state',self.Drone.current_state)
+        self.print_state(self.Drone.state_dict)
+        self.Drone.get_attitude()
         self.callbacks = {}
 
         self.register_callback(MessageID.STATE, self.state_callback)
@@ -45,3 +46,6 @@ class Mission(object):
             self.callbacks[self] = {}
         self.callbacks[self][event] = callback
 
+    def print_state(self, drone_state):
+        for sensor, state in drone_state.items():
+            print(str.format('{0}: {1}', sensor, state))

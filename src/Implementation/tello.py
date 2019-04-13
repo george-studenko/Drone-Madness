@@ -19,7 +19,7 @@ class Tello:
 
     BUFFER_SIZE = 1024
 
-    STATE = ('mid', 'x', 'y', 'z', 'mpry',
+    STATE = (#'mid', 'x', 'y', 'z', 'mpry',
              'pitch', 'roll', 'yaw',
              'vgx', 'vgy', 'vgz',
              'templ', 'temph',
@@ -57,6 +57,7 @@ class Tello:
         self.serverSocket.bind((self.SERVER_IP, self.SERVER_UDP_PORT))
         self.serverSocket.setblocking(1)
         self.current_state = None
+        self.state_dict = {}
 
         # Run tello udp receiver on background
         thread = threading.Thread(target=self.run_state_receiver, args=())
@@ -99,6 +100,7 @@ class Tello:
                     #print('Buffer type: ',type(buffer))
                     out = buffer[0].decode('latin-1')
                     self.current_state = out
+                    self.state_dict = self.collect_state(out)
                     print('OUT: ',out)
                     if out == 'ok':
                         print('accepted')
@@ -598,6 +600,9 @@ class Tello:
             False: Unsuccessful
             int: Seconds elapsed during flight.
         """
+        t =self.send_read_command('time?')
+        t1 = self.state_dict['time']
+        print(t,t1)
         return self.send_read_command('time?')
 
     def get_height(self):
@@ -622,6 +627,11 @@ class Tello:
             False: Unsuccessful
             int: pitch roll yaw
         """
+        t = self.send_read_command('attitude?')
+        t1 = self.state_dict['pitch']
+        t2 = self.state_dic t['roll']
+        t3 = self.state_dict['yaw']
+        print('ATTITUDE!!!!',t, t1,t2,t3)
         return self.send_read_command('attitude?')
 
     def get_barometer(self):
