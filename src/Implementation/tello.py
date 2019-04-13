@@ -56,6 +56,7 @@ class Tello:
         self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.serverSocket.bind((self.SERVER_IP, self.SERVER_UDP_PORT))
         self.serverSocket.setblocking(1)
+        self.current_state = None
 
         # Run tello udp receiver on background
         thread = threading.Thread(target=self.run_state_receiver, args=())
@@ -94,9 +95,11 @@ class Tello:
                     print('received buffer')
 
                     print(buffer)
+                    self.current_state = 'initial state'
                     #print('Buffer type: ',type(buffer))
                     out = buffer[0].decode('latin-1')
-                    print(out)
+                    self.current_state = out
+                    print('OUT: ',out)
                     if out == 'ok':
                         print('accepted')
                         break
@@ -105,17 +108,19 @@ class Tello:
                         time.sleep(0.5)
                         out = None
                 print('starting while loop...')
-                while out:
-                    buffer = self.serverSocket.recv(self.BUFFER_SIZE)
-                    out = buffer.decode('latin-1')
-                    out = out.replace('\n', '')
-                    dic = self.collect_state(out)
-                    t = time.time()
+                #while out:
+                #    buffer = self.serverSocket.recv(self.BUFFER_SIZE)
+                #    self.current_state= buffer
+                    #print(buffer)
+                    #out = buffer[0].decode('latin-1')
+                    #out = out.replace('\n', '')
+                    #dic = self.collect_state(out)
+                    #t = time.time()
                     # print(''.join(str(dic).split(' ')), file=sys.stdout, flush=True)
-                    drone_state = str.format(('time:{:4d}\tnick:{:>4}\troll:{:>4}\tyaw:{:>4}'.format(
-                        int((t - int(t)) * 1000), dic['pitch'], dic['roll'], dic['yaw'])))
+                    #drone_state = str.format(('time:{:4d}\tnick:{:>4}\troll:{:>4}\tyaw:{:>4}'.format(
+                    #    int((t - int(t)) * 1000), dic['pitch'], dic['roll'], dic['yaw'])))
                     #print(drone_state)
-                    self.response, self._ = drone_state
+                    #self.response, self._ = drone_state
 
                     #self.response, self._ = self.droneSocket.recvfrom(1024)  # buffer size is 1024 bytes
 

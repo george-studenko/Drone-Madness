@@ -2,6 +2,7 @@ from tello import *
 from flight_states import *
 import numpy as np
 
+
 class States(Enum):
     MANUAL = 0
     ARMING = 1
@@ -22,12 +23,12 @@ class Mission(object):
         self.navigating = False
         self.Drone = Tello()
         self.flight_state = States.MANUAL
-        print(self.Drone.response)
+        print('Current state',self.Drone.current_state)
         self.Drone.connect()
         #self.Drone.takeoff()
-        print(self.Drone.response)
+        print('Current state',self.Drone.current_state)
         #self.Drone.land()
-        print(self.Drone.response)
+        print('Current state',self.Drone.current_state)
         self.callbacks = {}
 
         self.register_callback(MessageID.STATE, self.state_callback)

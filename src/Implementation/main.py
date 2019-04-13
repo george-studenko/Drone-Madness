@@ -16,6 +16,7 @@ def main():
     print(mission.Drone._)
     # run frontend
     # frontend.run()
+    mission.Drone.end()
     print('Closing...')
 
 
