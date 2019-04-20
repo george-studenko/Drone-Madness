@@ -96,6 +96,11 @@ class Tello:
                     print(buffer)
                     #print('Buffer type: ',type(buffer))
                     out = buffer[0].decode('latin-1')
+                    #out = out.replace('\n', '')
+                    #dic = self.collect_state(out)
+
+                    #self.current_state = dic
+
                     print(out)
                     if out == 'ok':
                         print('accepted')

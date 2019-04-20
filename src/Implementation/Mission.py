@@ -1,6 +1,7 @@
 from tello import *
 from flight_states import *
 import numpy as np
+import time
 
 class States(Enum):
     MANUAL = 0
@@ -21,6 +22,7 @@ class Mission(object):
         self.starting_point = [0,0,0]
         self.navigating = False
         self.Drone = Tello()
+        self.current_state = {}
         self.flight_state = States.MANUAL
         print(self.Drone.response)
         self.Drone.connect()
