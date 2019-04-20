@@ -17,6 +17,7 @@ class Mission(object):
         self.starting_point = [0,0,0]
         self.navigating = False
         self.Drone = Tello()
+        self.current_state = {}
         self.flight_state = States.MANUAL
         #self.print_state(self.Drone.state_dict)
         self.callbacks = {}

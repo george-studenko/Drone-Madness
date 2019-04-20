@@ -12,6 +12,9 @@ def main():
     print('Starting...')
     mission = Mission(True)
     #while (True):
+    print(mission.current_state)
+    print(mission.Drone.response)
+    #print(mission.Drone._)
     # run frontend
     # frontend.run()
     print('Closing...')
