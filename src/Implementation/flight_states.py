@@ -11,3 +11,4 @@ class States(Enum):
     WAYPOINT = 4
     LANDING = 5
     DISARMING = 6
+    DEBUG_SENSORS = 7

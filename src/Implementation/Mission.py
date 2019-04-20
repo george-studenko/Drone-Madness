@@ -7,7 +7,7 @@ import functools
 
 
 class Mission(object):
-    def __init__(self):
+    def __init__(self, debug_status = False):
         #super().__init__(connection)
         self.target_position = np.array([0.0, 0.0, 0.0])
         self.all_waypoints = []
@@ -22,17 +22,22 @@ class Mission(object):
         self.callbacks = {}
         self.in_mission = False
         self.end_mission = False
+        self.stream_on = False
 
         functools.partial(print, flush=True)
 
-        self.start_mission()
+        self.start_mission(debug_status)
         #self.register_callback(MessageID.STATE, se,lf.state_callback)
 
 
     
     def state_callback(self):
-        time.sleep(0.5)
-        if self.flight_state == States.MANUAL:
+        time.sleep(2)
+
+        if self.flight_state == States.DEBUG_SENSORS:
+            self.check_drone_status_transition()
+
+        elif self.flight_state == States.MANUAL:
             self.arming_transition()
 
         elif self.flight_state == States.TAKEOFF:
@@ -67,6 +72,7 @@ class Mission(object):
         print('transition:',inspect.stack()[0][3])
         print('mission transtion started...')
         command_executed = self.Drone.rotate_clockwise(360)
+        self.Drone.get_frame_read()
         if command_executed:
             #time.sleep(5)
             self.flight_state = States.LANDING
@@ -86,16 +92,25 @@ class Mission(object):
             time.sleep(1)
             self.arming_transition()
 
-    def takeoff_transition(self):
-        print('transition:',inspect.stack()[0][3])
+    def takeoff_transition(self, do_not_takeoff = False):
+        print('transition:', inspect.stack()[0][3])
         print('take off transtion started...')
-        command_executed = self.Drone.takeoff()
-        if command_executed:
-            #time.sleep(3)
+        if do_not_takeoff:
             self.flight_state = States.IN_MISSION
+            print('take off cancelled...')
         else:
-            time.sleep(1)
-            self.takeoff_transition()
+            command_executed = self.Drone.takeoff()
+            self.Drone.get_frame_read()
+            if command_executed:
+                #time.sleep(3)
+                self.flight_state = States.IN_MISSION
+            else:
+                time.sleep(1)
+                self.takeoff_transition()
+
+    def check_drone_status_transition(self):
+        self.print_state(self.Drone.state_dict)
+        self.capture_img()
 
 
 
@@ -107,15 +122,28 @@ class Mission(object):
     def print_state(self, drone_state):
         readings = ''
         for sensor, state in drone_state.items():
-            readings += ' ' + str.format('{0}: {1}', sensor, state)
-        print(readings)
+            if state == '':
+                continue
+            else:
+                readings += ' ' + str.format('{0}: {1} ', sensor, state)
+        if readings:
+            print(readings)
+
+    def capture_img(self):
+        if not self.stream_on:
+            self.Drone.streamon()
+            self.stream_on = True
+        self.Drone.get_frame_read()
 
 
-    def start_mission(self):
+    def start_mission(self, debug_status):
         print('Starting mission...')
+        if debug_status:
+            self.flight_state = States.DEBUG_SENSORS
         while(not self.end_mission):
             self.state_callback()
-            self.print_state(self.Drone.state_dict)
+            if not debug_status:
+                self.print_state(self.Drone.state_dict)
         print('Mission completed')
 
 

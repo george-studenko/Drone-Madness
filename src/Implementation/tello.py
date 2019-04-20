@@ -185,8 +185,13 @@ class Tello:
         Returns:
             BackgroundFrameRead
         """
+        print('reading frame')
         if self.background_frame_read is None:
             self.background_frame_read = BackgroundFrameRead(self, self.get_udp_video_address()).start()
+            print('BackgroundFrameRead creted')
+            cv2.imwrite('captured-img.jpg', self.background_frame_read.frame)
+            print('Image written to disk')
+        print('done?')
         return self.background_frame_read
 
     def stop_video_capture(self):

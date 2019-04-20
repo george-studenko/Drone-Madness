@@ -10,7 +10,7 @@ from Mission import *
 def main():
 
     print('Starting...')
-    mission = Mission()
+    mission = Mission(True)
     #while (True):
     # run frontend
     # frontend.run()
