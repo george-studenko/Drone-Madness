@@ -1,5 +1,5 @@
 # coding=utf-8
-import socket, sys, signal, time
+import socket, signal, time
 import threading
 import cv2
 from threading import Thread
@@ -19,7 +19,7 @@ class Tello:
 
     BUFFER_SIZE = 1024
 
-    STATE = ('mid', 'x', 'y', 'z', 'mpry',
+    STATE = (#'mid', 'x', 'y', 'z', 'mpry',
              'pitch', 'roll', 'yaw',
              'vgx', 'vgy', 'vgz',
              'templ', 'temph',
@@ -41,6 +41,18 @@ class Tello:
 
     stream_on = False
 
+    @property
+    def height(self):
+        return self._height
+
+    @height.setter
+    def height(self, value):
+        self._height = value
+        self.height_changed()
+
+    def height_changed(self):
+        print(self.height)
+
     def __init__(self):
         # To send comments
         self.droneAddress = (self.IP_DRONE, self.DRONE_UDP_PORT)
@@ -56,6 +68,10 @@ class Tello:
         self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.serverSocket.bind((self.SERVER_IP, self.SERVER_UDP_PORT))
         self.serverSocket.setblocking(1)
+        self.current_state = None
+        self._height = 0
+        self.state_dict = {}
+
 
         # Run tello udp receiver on background
         thread = threading.Thread(target=self.run_state_receiver, args=())
@@ -77,50 +93,52 @@ class Tello:
         """Setup drone UDP receiver. This method listens for responses of Tello. Must be run from a background thread
         in order to not block the main thread."""
 
-        print('run_state')
+        #print('run_state')
         out = None
         while True:
+            time.sleep(0.5)
             try:
-                print('try')
+                #print('try')
 
                 attempts = 3
                 for i in range(attempts):
-                    print('attemp ',i)
+                    #print('attemp ',i)
 
                     self.serverSocket.sendto('command'.encode('latin-1'), self.droneAddress)
-                    print('sent command')
+                    #print('sent command')
 
                     buffer = self.serverSocket.recvfrom(self.BUFFER_SIZE)  # buffer size is 1024 bytes
-                    print('received buffer')
+                    #print('received buffer')
 
-                    print(buffer)
+                    #print(buffer)
+                    self.current_state = 'initial state'
                     #print('Buffer type: ',type(buffer))
                     out = buffer[0].decode('latin-1')
-                    #out = out.replace('\n', '')
-                    #dic = self.collect_state(out)
-
-                    #self.current_state = dic
-
-                    print(out)
+                    self.current_state = out
+                    self.state_dict = self.collect_state(out)
+                    #print('OUT: ',out)
+                    #self.response = buffer[0]
                     if out == 'ok':
-                        print('accepted')
+                        self.response = out
+                        #print('accepted')
                         break
                     else:
-                        print('rejected')
+                        #print('rejected')
                         time.sleep(0.5)
                         out = None
-                print('starting while loop...')
-                while out:
-                    buffer = self.serverSocket.recv(self.BUFFER_SIZE)
-                    out = buffer.decode('latin-1')
-                    out = out.replace('\n', '')
-                    dic = self.collect_state(out)
-                    t = time.time()
+                #while out:
+                #    buffer = self.serverSocket.recv(self.BUFFER_SIZE)
+                #    self.current_state= buffer
+                    #print(buffer)
+                    #out = buffer[0].decode('latin-1')
+                    #out = out.replace('\n', '')
+                    #dic = self.collect_state(out)
+                    #t = time.time()
                     # print(''.join(str(dic).split(' ')), file=sys.stdout, flush=True)
-                    drone_state = str.format(('time:{:4d}\tnick:{:>4}\troll:{:>4}\tyaw:{:>4}'.format(
-                        int((t - int(t)) * 1000), dic['pitch'], dic['roll'], dic['yaw'])))
+                    #drone_state = str.format(('time:{:4d}\tnick:{:>4}\troll:{:>4}\tyaw:{:>4}'.format(
+                    #    int((t - int(t)) * 1000), dic['pitch'], dic['roll'], dic['yaw'])))
                     #print(drone_state)
-                    self.response, self._ = drone_state
+                    #self.response, self._ = drone_state
 
                     #self.response, self._ = self.droneSocket.recvfrom(1024)  # buffer size is 1024 bytes
 
@@ -188,16 +206,17 @@ class Tello:
         print('Send command: ' + command)
         timestamp = int(time.time() * 1000)
 
-        self.droneSocket.sendto(command.encode('utf-8'), self.droneAddress)
+        self.serverSocket.sendto(command.encode('utf-8'), self.droneAddress)
 
         while self.response is None:
+            #self.serverSocket.sendto(command.encode('utf-8'), self.droneAddress)
             if (time.time() * 1000) - timestamp > self.RESPONSE_TIMEOUT * 1000:
                 print('Timeout exceed on command ' + command)
                 return False
 
         print('Response: ' + str(self.response))
 
-        response = self.response.decode('utf-8')
+        response = self.response#.decode('utf-8')
 
         self.response = None
 
@@ -266,6 +285,7 @@ class Tello:
         if response == 'OK' or response == 'ok':
             return True
         else:
+            print('ERROR RESPONSE IS',response)
             return self.return_error_on_send_command(command, response)
 
     @accepts(command=str)
