@@ -1,4 +1,5 @@
 To obtain de models directory:
 
- - cat *.tar.gz.* | tar zxvf -
-
+```bash
+cat *.tar.gz.* | tar zxvf -
+```
